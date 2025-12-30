@@ -126,6 +126,9 @@ ifndef ignore-not-found
   ignore-not-found = false
 endif
 
+.PHONY: docs
+docs: crd-ref-docs ## Generate docs
+	$(CRD_REF_DOCS) --renderer=markdown --config=./docs/crd-ref-docs-config.yaml --source-path=./api --output-path=./docs --output-mode=group
 .PHONY: create-cluster
 create-cluster: kind ## Create local Kubernetes cluster
 	$(KIND) create cluster
@@ -165,6 +168,7 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
 KIND ?= $(LOCALBIN)/kind
+CRD_REF_DOCS ?= $(LOCALBIN)/crd-ref-docs
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.4.3
@@ -172,6 +176,7 @@ CONTROLLER_TOOLS_VERSION ?= v0.16.1
 ENVTEST_VERSION ?= release-0.19
 GOLANGCI_LINT_VERSION ?= v1.59.1
 KIND_VERSION ?= v0.31.0
+CRD_REF_DOCS_VERSION ?= v0.2.0
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
@@ -196,6 +201,11 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 .PHONY: kind
 kind: ## Build kind locally if necessary.
 	./scripts/configure-kind.sh $(KIND_VERSION) ## Build kind locally if necessary.
+
+.PHONY: crd-ref-docs
+crd-ref-docs: $(CRD_REF_DOCS) ## Download crd-ref-docs locally if necessary.
+$(CRD_REF_DOCS): $(LOCALBIN)
+	$(call go-install-tool,$(CRD_REF_DOCS),github.com/elastic/crd-ref-docs,$(CRD_REF_DOCS_VERSION))
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary
